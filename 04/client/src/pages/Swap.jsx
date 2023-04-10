@@ -4,7 +4,7 @@ import SelectTokenModal from "../components/SelectTokenModal"
 import {getQuote} from "../services/QuoteService";
 import TokenSelect from "../components/TokenSelect";
 import {
-    Page,
+    Page, PriceContainer, PriceText,
     SwapContainer, SwapHeader,
     TokenContainer,
     TokenInput,
@@ -13,6 +13,7 @@ import {
 import useMetaMask from "../hooks/useMetaMask";
 import useSymbols from "../hooks/useSymbols";
 import useAmount from "../hooks/useAmount";
+import * as PriceService from "../services/PriceService";
 
 
 function Swap() {
@@ -37,10 +38,16 @@ function Swap() {
 
     const [isInput, setIsInput] = useState(null)
     const [showModal, setShowModal] = useState(false)
+    const [priceImpact, setPriceImpact] = useState(false)
 
     const calculateQuote = async () => {
         const quotedOutput = await getQuote(inputAmount, inputSymbol, outputSymbol)
         setOutputAmount(quotedOutput)
+    }
+
+    const calculatePriceImpact = async () => {
+        const priceImpact = await PriceService.getPriceImpact(inputAmount, inputSymbol, outputSymbol)
+        setPriceImpact(priceImpact)
     }
 
     useEffect(() => {
@@ -53,6 +60,7 @@ function Swap() {
         if (!Utils.validateInputs(inputSymbol, outputSymbol, inputAmount)) return
 
         calculateQuote()
+        calculatePriceImpact()
     }, [inputAmount, inputSymbol, outputSymbol])
 
     return (
@@ -84,6 +92,18 @@ function Swap() {
                             isInput={false} />
                     </TokenRow>
                 </TokenContainer>
+
+                {priceImpact && (
+                    <PriceContainer>
+                        <PriceText>
+                            Price Impact
+                        </PriceText>
+                        <div>
+                            {priceImpact}%
+                        </div>
+                    </PriceContainer>
+                )}
+
             </SwapContainer>
 
             {showModal && (
