@@ -4,6 +4,7 @@ import SelectTokenModal from "../components/SelectTokenModal"
 import {getQuote} from "../services/QuoteService";
 import TokenSelect from "../components/TokenSelect";
 import {
+    Balance,
     Page, PriceContainer, PriceText,
     SwapContainer, SwapHeader,
     TokenContainer,
@@ -14,13 +15,15 @@ import useMetaMask from "../hooks/useMetaMask";
 import useSymbols from "../hooks/useSymbols";
 import useAmount from "../hooks/useAmount";
 import * as PriceService from "../services/PriceService";
+import useWalletBalances from "../hooks/useWalletBalances";
+import useDecimals from "../hooks/useDecimals";
 
 
 function Swap() {
     const {
         _connectMetaMask,
         tryConnectingMetaMask,
-        _signer,
+        signer,
         _walletAddress
     } = useMetaMask()
     const {
@@ -35,6 +38,16 @@ function Swap() {
         outputAmount,
         setOutputAmount
     } = useAmount()
+    const {
+        inputWalletBalance,
+        outputWalletBalance,
+        setWalletBalances,
+    } = useWalletBalances()
+    const {
+        inputDecimals,
+        outputDecimals,
+        setDecimals,
+    } = useDecimals()
 
     const [isInput, setIsInput] = useState(null)
     const [showModal, setShowModal] = useState(false)
@@ -63,6 +76,15 @@ function Swap() {
         calculatePriceImpact()
     }, [inputAmount, inputSymbol, outputSymbol])
 
+    useEffect(() => {
+        setWalletBalances(inputSymbol, outputSymbol)
+        setDecimals(inputSymbol, outputSymbol)
+    }, [inputSymbol, outputSymbol])
+
+    useEffect(() => {
+        setWalletBalances(inputSymbol, outputSymbol)
+    }, [signer])
+
     return (
         <Page>
             <SwapContainer>
@@ -78,6 +100,9 @@ function Swap() {
                             symbol={inputSymbol}
                             isInput={true} />
                     </TokenRow>
+                    <Balance>
+                        {Utils.hexToHumanAmount(inputWalletBalance, inputDecimals, 3)}
+                    </Balance>
                 </TokenContainer>
                 <TokenContainer>
                     <TokenRow>
@@ -91,6 +116,9 @@ function Swap() {
                             symbol={outputSymbol}
                             isInput={false} />
                     </TokenRow>
+                    <Balance>
+                        {Utils.hexToHumanAmount(outputWalletBalance, outputDecimals, 3)}
+                    </Balance>
                 </TokenContainer>
 
                 {priceImpact && (
