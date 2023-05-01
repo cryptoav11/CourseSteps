@@ -17,14 +17,15 @@ import useAmount from "../hooks/useAmount";
 import * as PriceService from "../services/PriceService";
 import useWalletBalances from "../hooks/useWalletBalances";
 import useDecimals from "../hooks/useDecimals";
+import SwapButton from "../components/SwapButton";
 
 
 function Swap() {
     const {
-        _connectMetaMask,
+        connectMetaMask,
         tryConnectingMetaMask,
         signer,
-        _walletAddress
+        walletAddress
     } = useMetaMask()
     const {
         inputSymbol,
@@ -52,6 +53,8 @@ function Swap() {
     const [isInput, setIsInput] = useState(null)
     const [showModal, setShowModal] = useState(false)
     const [priceImpact, setPriceImpact] = useState(false)
+    const [isConfirming, setIsConfirming] = useState(false)
+    const [isTransacting, setIsTransacting] = useState(false)
 
     const calculateQuote = async () => {
         const quotedOutput = await getQuote(inputAmount, inputSymbol, outputSymbol)
@@ -61,6 +64,10 @@ function Swap() {
     const calculatePriceImpact = async () => {
         const priceImpact = await PriceService.getPriceImpact(inputAmount, inputSymbol, outputSymbol)
         setPriceImpact(priceImpact)
+    }
+
+    const swapTokens = async () => {
+
     }
 
     useEffect(() => {
@@ -131,6 +138,18 @@ function Swap() {
                         </div>
                     </PriceContainer>
                 )}
+
+                <SwapButton
+                    signer={signer}
+                    inputSymbol={inputSymbol}
+                    outputSymbol={outputSymbol}
+                    inputAmount={inputAmount}
+                    inputWalletBalance={inputWalletBalance}
+                    inputDecimals={inputDecimals}
+                    connectMetaMask={connectMetaMask}
+                    swapTokens={swapTokens}
+                    isTransacting={isTransacting}
+                    isConfirming={isConfirming} />
 
             </SwapContainer>
 
