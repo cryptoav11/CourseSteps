@@ -18,6 +18,7 @@ import * as PriceService from "../services/PriceService";
 import useWalletBalances from "../hooks/useWalletBalances";
 import useDecimals from "../hooks/useDecimals";
 import SwapButton from "../components/SwapButton";
+import SwapService from "../services/SwapService";
 
 
 function Swap() {
@@ -67,7 +68,11 @@ function Swap() {
     }
 
     const swapTokens = async () => {
+        if (!Utils.validateInputs(inputSymbol, outputSymbol, inputAmount)) return
+        if (walletAddress === null) return
 
+        await SwapService.swapTokens(inputAmount, inputSymbol, outputSymbol, setIsTransacting, setIsConfirming)
+        setWalletBalances(inputSymbol, outputSymbol)
     }
 
     useEffect(() => {
