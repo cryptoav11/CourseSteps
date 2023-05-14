@@ -23,6 +23,9 @@ export default {
         if(![inputSymbol, outputSymbol].includes('ETH')) {
             await swapErc20ToErc20(amountIn, inputSymbol, outputSymbol, deadline, signer, recipient, setIsTransacting, setIsConfirming)
         }
+
+        setIsConfirming(false)
+        setIsTransacting(false)
     },
 }
 
