@@ -32,6 +32,9 @@ export default {
         else if (inputSymbol === 'WETH' && outputSymbol === 'ETH') {
             await swapWethToEth(amountIn, signer, setIsTransacting, setIsConfirming,)
         }
+        else if (inputSymbol !== 'ETH' && outputSymbol === 'ETH') {
+            await swapErc20ToEth(amountIn, inputSymbol, deadline, signer, recipient, setIsTransacting, setIsConfirming)
+        }
 
 
         setIsConfirming(false)
@@ -156,7 +159,56 @@ const swapWethToEth = async (
     console.log(`Unwrap WETH to ETH`)
 }
 
+const swapErc20ToEth = async (
+    amountIn,
+    inputSymbol,
+    deadline,
+    signer,
+    recipient,
+    setIsTransacting,
+    setIsConfirming,
+) => {
 
+    try {
+        const tokenIn = tokenInfos[inputSymbol].address
+        const tokenOut = tokenInfos['WETH'].address
+
+        const swapRouterContract = getSwapRouter()
+
+        const params1 = {
+            tokenIn,
+            tokenOut,
+            recipient: swapRouterContract.address,
+            deadline,
+            amountIn,
+            fee: 3000,
+            amountOutMinimum: 0,
+            sqrtPriceLimitX96: 0,
+        }
+        const encData1 = swapRouterContract.interface.encodeFunctionData('exactInputSingle', [params1])
+
+        const amountMinimum = 0
+        const encData2 = swapRouterContract.interface.encodeFunctionData('unwrapWETH9', [amountMinimum, recipient])
+
+        const calls = [encData1, encData2]
+        const encMultiCall = swapRouterContract.interface.encodeFunctionData('multicall', [calls])
+
+        const txArgs = {
+            to: contracts.SWAPROUTER.address,
+            from: recipient,
+            data: encMultiCall,
+            gasLimit: GAS_LIMIT,
+        }
+        const tx = await signer.sendTransaction(txArgs)
+        setIsTransacting(true)
+        setIsConfirming(false)
+        await tx.wait()
+    } catch {
+        setIsConfirming(false)
+    }
+
+    console.log(`Swapped ${inputSymbol} to ETH`)
+}
 
 
 
